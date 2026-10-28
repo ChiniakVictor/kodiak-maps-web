@@ -223,7 +223,7 @@
   // Anything else (or nothing) keeps the normal start view. Not saved to the user's layer prefs.
   // layers: forced ON for this visit only (logging roads, 17(b) easements, military history incl. all its sub-layers);
   // the visitor's saved layer settings in localStorage are not written by the deep link.
-  const VIEWS = { logging: { layers: ['log', 'esmt', 'poi_mil'], bounds: [[-152.405, 57.552], [-152.152, 57.642]],
+  const VIEWS = { logging: { layers: ['log', 'esmt', 'poi_mil'], bounds: [[-152.46, 57.53], [-152.11, 57.66]],
     msg: 'Chiniak logging roads, 17(b) easements and military history — logging roads mapped by Victor (kodiakking.com)' } };
   const viewKey = (() => {
     try {
