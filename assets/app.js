@@ -219,10 +219,29 @@
     pBusy = false;
   }
 
+  // Deep link: ?view=logging or #logging opens on the Chiniak logging roads with that layer on.
+  // Anything else (or nothing) keeps the normal start view. Not saved to the user's layer prefs.
+  // layers: forced ON for this visit only (logging roads, 17(b) easements, military history incl. all its sub-layers);
+  // the visitor's saved layer settings in localStorage are not written by the deep link.
+  const VIEWS = { logging: { layers: ['log', 'esmt', 'poi_mil'], bounds: [[-152.405, 57.552], [-152.152, 57.642]],
+    msg: 'Chiniak logging roads, 17(b) easements and military history — logging roads mapped by Victor (kodiakking.com)' } };
+  const viewKey = (() => {
+    try {
+      const q = new URLSearchParams(location.search).get('view');
+      const h = location.hash.replace(/^#/, '');
+      const k = (q || (VIEWS[h] ? h : '') || '').toLowerCase();
+      return Object.prototype.hasOwnProperty.call(VIEWS, k) ? k : null;
+    } catch (e) { return null; }
+  })();
+  const VIEW = viewKey ? VIEWS[viewKey] : null;
+  if (VIEW) { VIEW.layers.forEach((id) => { state.on[id] = true; }); if (location.hash && !/^#map=/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search); }
+
   async function init() {
     const style = await baseStyle();
+    const start = VIEW ? { bounds: VIEW.bounds, fitBoundsOptions: { padding: narrow ? 16 : 40 } } : { center: [-152.62, 57.62], zoom: narrow ? 8.2 : 8.8 };
+    if (VIEW && /^#map=/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
     map = new maplibregl.Map({
-      container: 'map', style, center: [-152.62, 57.62], zoom: narrow ? 8.2 : 8.8, maxZoom: 18, minZoom: 3, hash: 'map',
+      container: 'map', style, ...start, maxZoom: 18, minZoom: 3, hash: 'map',
       attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false,
     });
     map.touchZoomRotate.disableRotation();
@@ -271,6 +290,11 @@
       map.on('mousemove', (e) => { map.getCanvas().style.cursor = map.queryRenderedFeatures(e.point, { layers: tap.filter((l) => map.getLayer(l)) }).length ? 'pointer' : ''; });
       // On small screens start with the credits collapsed to the (i) button; full credits are in About.
       if (window.innerWidth < 720) setTimeout(() => document.querySelectorAll('.maplibregl-ctrl-attrib.maplibregl-compact-show').forEach((e) => { e.classList.remove('maplibregl-compact-show'); e.removeAttribute('open'); }), 0);
+      if (VIEW) {
+        status(VIEW.msg, 5000);
+        // Drop ?view= once applied so a reload or shared link keeps the visitor's own position.
+        try { const u = new URL(location.href); u.searchParams.delete('view'); history.replaceState(null, '', u.pathname + u.search + location.hash); } catch (e) { /* ignore */ }
+      }
       document.body.dataset.ready = '1';
     });
     map.on('error', (e) => { if (e && e.error && !/tile|Failed to fetch|AJAXError/i.test(String(e.error.message))) console.warn(e.error); });
