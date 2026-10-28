@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kodiak Maps (web preview)</title>
+<meta name="description" content="Kodiak Island map: 17(b) easements, trails, logging roads, property lines, fishing spots and WWII military history on USGS topo. Web preview of the Kodiak Maps Android app.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#12171c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2312171c'/%3E%3Cpath d='M8 46 L24 22 L34 36 L42 26 L56 46 Z' fill='none' stroke='%237fd3ff' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/maplibre/maplibre-gl.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top" class="top">
+  <div class="brand"><span class="logo"></span><span class="title">Kodiak Maps</span><span class="badge">Web preview</span></div>
+  <div class="actions">
+    <button id="btnLayers" class="btn primary" aria-controls="panel" aria-expanded="false" title="Map layers">◫ <span class="lbl">Layers</span></button>
+    <button id="btnBase" class="btn" title="Switch base map">⛰ <span id="baseName" class="lbl">USGS topo</span></button>
+    <button id="btnTides" class="btn" title="Tide table">≈ <span class="lbl">Tides</span></button>
+    <button id="btnInfo" class="btn" title="Credits and disclaimer">ⓘ <span class="lbl">About</span></button>
+  </div>
+</div>
+<div id="map" role="application" aria-label="Kodiak Island map"></div>
+<button id="btnFind" class="fab" title="Find me (one-time, stays on your device)">◎ <span class="lbl">Find me</span></button>
+<div id="status" class="status" hidden></div>
+<div id="zoomHint" class="hint" hidden>Zoom in to see property lines</div>
+
+<aside id="panel" class="panel" hidden>
+  <div class="panel-head"><h2 id="panelTitle">Map layers</h2><button class="x" data-close aria-label="Close">✕</button></div>
+  <div id="panelBody" class="panel-body"></div>
+</aside>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-grip"></div>
+  <div class="panel-head"><h2 id="sheetTitle"></h2><button class="x" data-close-sheet aria-label="Close">✕</button></div>
+  <div id="sheetBody" class="panel-body"></div>
+</div>
+
+<noscript><p class="noscript">This map needs JavaScript.</p></noscript>
+<script src="assets/maplibre/maplibre-gl.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
