@@ -73,3 +73,23 @@ select{background:var(--card);color:var(--text);border:1px solid var(--line);bor
 @media (max-width:380px){.title{font-size:15px;letter-spacing:.03em}.actions{gap:4px}.btn{padding:7px 8px}}
 
 [hidden]{display:none !important}
+
+/* v1.5.4 historic photo gallery */
+.gal{margin:8px 0 4px}
+.gal-h{font-size:13px;font-weight:700;color:#BCAAA4;margin-bottom:4px}
+.gal-frame{position:relative;background:#15191c;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:220px}
+.gal-frame img{max-width:100%;max-height:220px;width:auto;height:auto;object-fit:contain;cursor:zoom-in;display:block}
+.gal-b{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:44px;border:0;border-radius:8px;background:#000a;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.gal-prev{left:6px}.gal-next{right:6px}
+.gal-n{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px}
+.gal-c{font-size:13px;margin-top:2px}.gal-c.ed{font-style:italic;color:var(--soft)}
+.gal-cr{font-size:11px;color:var(--muted);margin-top:2px}
+.gal-src{font-size:12px;margin-top:3px}
+.gal-lic{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* v1.5.10 startup tip pointing at the Layers button (not modal: only the card takes clicks) */
+.ltip{position:fixed;z-index:40;max-width:300px;background:rgba(30,35,40,.95);color:#fff;border:1px solid #FFC10766;border-radius:14px;padding:12px 14px 6px;box-shadow:0 6px 24px #0008;font:14px/1.4 Inter,system-ui,sans-serif}
+.ltip b{color:#FFC107;font-size:16px}.ltip p{margin:4px 0 4px}.ltip .k{white-space:nowrap;color:#7fd3ff;font-weight:600}
+.ltip-arrow{position:absolute;top:-9px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:9px solid rgba(30,35,40,.95)}
+.ltip-btns{display:flex;justify-content:flex-end;gap:4px}.ltip-btns button{background:none;border:0;padding:8px 10px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;color:#B0BEC5}
+.ltip-btns .ok{color:#FFC107}

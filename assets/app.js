@@ -28,29 +28,36 @@
     { grp: 'Kodiak Island' },
     { id: 'esmt', t: '17(b) easements', s: 'BLM ANCSA public easements: trails, roads, sites', on: true,
       legend: ['trail25', 'trail50', 'road', 'site'].map((k) => [ESMT[k][0], ESMT[k][1]]) },
-    { id: 'row', t: 'State road right-of-way', s: 'Chiniak Hwy & Rezanof Dr (DOT&PF). Approximate band, widths DERIVED (measured from parcel gaps or assumed 100 ft)', on: true },
-    { id: 'trails', t: 'Kodiak Trails', s: 'Kodiak Island Borough trail network: 77 trails, 265.5 mi', on: true,
+    { id: 'row', t: 'State road right-of-way', s: 'Chiniak Hwy & Rezanof Dr (DOT&PF). Approximate band, widths DERIVED (measured from parcel gaps or assumed 100 ft)', on: false },
+    { id: 'trails', t: 'Kodiak Trails', s: 'Kodiak Island Borough trail network: 77 trails, 265.5 mi', on: false,
       legend: [[TRAIL, '━ double track'], [TRAIL, '╍ single track'], [TRAIL, '··· route']] },
     { id: 'bike', t: 'Town bike trails', s: "Victor's Town Bike Trail Map: trails in their map colours, trailheads and work spots", on: false },
     { id: 'log', t: 'Chiniak logging roads', s: 'From the kodiakking.com Google Earth map (Victor)', on: true },
     { id: 'parcels', t: 'Property lines', s: 'Borough parcel boundaries only, from zoom 13. No owner, address or value data is included.', on: false },
     { id: 'own', t: 'Land ownership', s: 'Category and agency only (State, Federal, Native corporation, Borough…). Private owners are not named.', on: false },
     { id: 'roads', t: 'Road names', s: 'Kodiak Island Borough roads + DOT&PF centerlines, labelled from zoom 13', on: false },
-    { id: 'fish', t: 'Fishing spots', s: 'ADF&G GoFishAK spots, ramps & harbors (blue salt, green fresh, yellow stocked lake)', on: false,
+    { id: 'fish', t: 'Fishing spots', s: 'ADF&G GoFishAK spots, ramps & harbors (blue salt, green fresh, yellow stocked lake)', on: true,
       legend: Object.keys(FISH).map((k) => [FISH[k], FISH_LBL[k].split(' (')[0]]) },
     { grp: 'Places' },
     { id: 'poi_food', t: 'Food', s: 'Restaurants, coffee, groceries', on: false, dot: '#FF7043' },
     { id: 'poi_travel', t: 'Travel', s: 'Airports, ferry, floatplanes, harbors, air taxis', on: false, dot: '#29B6F6' },
     { id: 'poi_school', t: 'Schools', s: 'KIBSD schools and attendance areas', on: false, dot: '#E53935' },
-    { id: 'poi_mil', t: 'Military history', s: 'WWII and Cold War sites: Chiniak, Long Island, Fort Abercrombie, Buskin + field-GPS points and features traced from kadiak.org old maps (zoom in)', on: true, dot: '#8D6E63' },
+    { id: 'poi_mil', t: 'Military history', s: 'WWII and Cold War sites: Chiniak, Long Island, Fort Abercrombie, Buskin, Puffin Island, Spruce Cape, Woody Island, Pillar Mt. + field-GPS points, old kadiak.org map features and kadiak.org photos (zoom in)', on: false, dot: '#8D6E63' },
     { id: 'poi_comm', t: 'Community', s: 'Chiniak Public Library', on: false, dot: '#AB47BC' },
   ];
   const SRC_FILE = { esmt: 'easements.geojson', row: 'state_row.geojson', trails: 'trails.geojson', bike: 'bike_trails.geojson', log: 'logging_roads.geojson',
     own: 'ownership.geojson', roads: 'roads.geojson', fish: 'fishing.geojson', poi: 'poi.geojson' };
   const KEY = 'kodiakmaps-web-v1';
   let state = { base: 'usgs', on: Object.fromEntries(MENU.filter((m) => m.id).map((m) => [m.id, m.on])) };
-  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.on) state = { base: s.base || 'usgs', on: { ...state.on, ...s.on } }; } catch (e) { /* private mode */ }
+  // v1.5.13 (Victor): open with only easements, logging roads and fishing on (hot spots are app-only: live ADF&G/Reddit feed).
+  // Saved toggles from before 1.5.13 are replaced once by these defaults (base map kept); later toggles are kept as before.
+  const DEF_VER = 1513;
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.on) state = s.defVer === DEF_VER ? { base: s.base || 'usgs', on: { ...state.on, ...s.on } } : { base: s.base || 'usgs', on: state.on };
+  } catch (e) { /* private mode */ }
+  state.defVer = DEF_VER;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } };
+  save();
 
   // ---------- base style: the app's usgs-style.json + otm-style.json merged into one style ----------
   async function baseStyle() {
@@ -147,8 +154,12 @@
       'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'typ'], 'runway', 7, 'road', 2.4, 1.6], 16, ['match', ['get', 'typ'], 'runway', 7, 2.8]], 'line-opacity': ['match', ['get', 'typ'], 'runway', 0.8, 1],
       'line-dasharray': ['match', ['get', 'typ'], 'runway', ['literal', [1, 0]], ['literal', [3, 2]]] }, {}, 11],
     ['poi-pt', 'circle', { 'circle-color': col, 'circle-radius': zl([[8, 6], [14, 11], [17, 14]]), 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 }],
-    ['poi-dpt', 'circle', { 'circle-color': col, 'circle-radius': zl([[14, 4.5], [17, 8]]), 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 }, {}, 14],
-    ['poi-hpt', 'circle', { 'circle-color': HIST.PT, 'circle-radius': zl([[13, 4], [17, 8]]), 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 }, {}, 13],
+    // v1.5.10: old-map and field-GPS points show from farther out as small "breadcrumb" dots (no labels) so people can see where
+    // to zoom in; full size + tappable from the old zooms (HIST_PT_Z / DETAIL_Z). A tap on a breadcrumb zooms in on it.
+    ['poi-dpt', 'circle', { 'circle-color': col, 'circle-radius': zl([[10, 2], [13, 3], [14, 4.5], [17, 8]]), 'circle-opacity': zl([[10, 0.75], [14, 1]]),
+      'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': zl([[12, 0], [14, 1.5]]) }, {}, 10],
+    ['poi-hpt', 'circle', { 'circle-color': HIST.PT, 'circle-radius': zl([[9, 2], [12, 3], [13, 4], [17, 8]]), 'circle-opacity': zl([[9, 0.8], [13, 1]]),
+      'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': zl([[11, 0.6], [13, 1.5]]) }, {}, 9],
     ['poi-icon', 'symbol', {}, { 'icon-image': ['concat', 'poi-ic-', ['get', 'k']], 'icon-size': zl([[8, 0.45], [14, 0.7]]), 'icon-allow-overlap': true, 'icon-ignore-placement': true }],
     ['poi-label', 'symbol', { 'text-color': '#FFFFFF', ...halo }, { 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 11.5, 'text-anchor': 'top', 'text-offset': [0, 1.5], 'text-optional': true, 'text-max-width': 12 }, 14],
   ];
@@ -296,19 +307,59 @@
         try { const u = new URL(location.href); u.searchParams.delete('view'); history.replaceState(null, '', u.pathname + u.search + location.hash); } catch (e) { /* ignore */ }
       }
       document.body.dataset.ready = '1';
+      layersTip();
     });
     map.on('error', (e) => { if (e && e.error && !/tile|Failed to fetch|AJAXError/i.test(String(e.error.message))) console.warn(e.error); });
   }
 
+  // ---------- v1.5.10 startup tip pointing at the Layers button ----------
+  const TIP_KEY = 'kodiakmaps.layersTipNever';
+  function layersTip() {
+    let never = false; try { never = localStorage.getItem(TIP_KEY) === '1'; } catch (e) { /* private mode */ }
+    if (never || document.getElementById('layersTip')) return;
+    const btn = document.getElementById('btnLayers'); if (!btn) return;
+    const tip = document.createElement('div');
+    tip.id = 'layersTip'; tip.className = 'ltip'; tip.setAttribute('role', 'status');
+    tip.innerHTML = '<div class="ltip-arrow"></div><b>Pick your layers</b><p>Tap the <span class="k">◫ Layers</span> button to choose the layers you want to see: fishing, trails, food, military history and more.</p>'
+      + '<div class="ltip-btns"><button class="never">Don\'t show again</button><button class="ok">Got it</button></div>';
+    document.body.appendChild(tip);
+    const place = () => {
+      const r = btn.getBoundingClientRect(); const w = tip.offsetWidth;
+      const left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+      tip.style.left = left + 'px'; tip.style.top = (r.bottom + 12) + 'px';
+      tip.querySelector('.ltip-arrow').style.left = (r.left + r.width / 2 - left - 9) + 'px';
+    };
+    place(); window.addEventListener('resize', place);
+    const hide = () => { tip.remove(); window.removeEventListener('resize', place); };
+    tip.querySelector('.ok').onclick = hide;
+    tip.querySelector('.never').onclick = () => { try { localStorage.setItem(TIP_KEY, '1'); } catch (e) { /* ignore */ } hide(); };
+    btn.addEventListener('click', hide, { once: true });
+  }
+
   // ---------- tap for info ----------
+  const HIST_PT_Z = 13, DETAIL_Z = 14;
   const TAP_LAYERS = () => ['poi-icon', 'poi-pt', 'poi-dpt', 'poi-hpt', 'poi-hedge', 'poi-hline', 'poi-hfill', 'fish-pt', 'esmt-pt', 'esmt-line', 'esmt-area',
     'log-pin', 'log-line', 'log-area', 'bike-pt', 'bike-line', 'trail-solid', 'trail-single', 'trail-route', 'row-fill', 'road-hit', 'poi-zone-fill', 'parcel-fill', 'own-fill'];
   function onClick(e) {
     const pad = narrow ? 10 : 6;
     const box = [[e.point.x - pad, e.point.y - pad], [e.point.x + pad, e.point.y + pad]];
-    const layers = TAP_LAYERS().filter((l) => map.getLayer(l) && map.getLayoutProperty(l, 'visibility') !== 'none');
+    const z = map.getZoom();
+    const far = (l) => (l === 'poi-hpt' && z < HIST_PT_Z) || (l === 'poi-dpt' && z < DETAIL_Z); // breadcrumb dots: not opened, tap priority as before
+    const vis = (l) => map.getLayer(l) && map.getLayoutProperty(l, 'visibility') !== 'none';
+    const layers = TAP_LAYERS().filter((l) => vis(l) && !far(l));
     const fs = map.queryRenderedFeatures(box, { layers });
-    if (!fs.length) { closeSheet(); return; }
+    if (!fs.length) {
+      const fl = ['poi-hpt', 'poi-dpt'].filter((l) => vis(l) && far(l));
+      const fb = [[e.point.x - 12, e.point.y - 12], [e.point.x + 12, e.point.y + 12]];
+      const dots = fl.length ? map.queryRenderedFeatures(fb, { layers: fl }) : [];
+      if (dots.length) {
+        const d2 = (f) => { const q = map.project(f.geometry.coordinates); return (q.x - e.point.x) ** 2 + (q.y - e.point.y) ** 2; };
+        dots.sort((a, b) => d2(a) - d2(b));
+        closeSheet(); map.flyTo({ center: dots[0].geometry.coordinates, zoom: Math.min(17, Math.max(z + 2, 14.5)), duration: 900 });
+        return;
+      }
+      closeSheet(); return;
+    }
     const rank = (f) => TAP_LAYERS().indexOf(f.layer.id);
     fs.sort((a, b) => rank(a) - rank(b));
     showFeature(fs[0], e.lngLat);
@@ -320,6 +371,7 @@
     if (id.startsWith('poi-')) {
       title = p.name || p.label || 'Place';
       html += pill(p.cat_label || '', p.color || '#7fd3ff');
+      if (p.id) html += '<div id="gal" class="gal" hidden></div>';   // v1.5.11: any POI with bundled photos (travel/harbors, library)
       const rows = String(p.rows || '').split('\u001f').filter(Boolean).map((r) => r.split('\u001e'));
       html += '<table class="kv">' + rows.map(([k, v]) => (k === 'Summary' ? `<tr class="sum"><td colspan="2">${linkify(v)}</td></tr>` : row(k, v))).join('') + '</table>';
       if (p.note) html += `<p class="warn">${linkify(p.note)}</p>`;
@@ -339,6 +391,7 @@
       html += '<div class="credit">Source: BLM Alaska ANCSA 17(b) easements (gis.blm.gov)</div>';
     } else if (id.startsWith('fish')) {
       title = p.name; html += pill(FISH_LBL[p.type] || p.cat || 'Fishing', FISH[p.type] === '#283593' ? '#9FA8DA' : FISH[p.type] || '#B0BEC5');
+      html += '<div id="gal" class="gal" hidden></div>';   // v1.5.11: photos on top, details below unchanged
       html += '<table class="kv">' + row('Type', p.cat) + row('Species', p.species) + row('Timing', p.timing) + row('About', p.desc) + row('Access', p.access || p.accessType)
         + row('Getting there', p.getting) + row('Parking', p.parking) + row('Season', p.season) + row('Tackle', p.tackle) + row('Stocked', p.stocked) + row('Position check', p.acc) + '</table>';
       if (p.eo) html += `<p class="warn">⚠ ${linkify(p.eo)}</p>`;
@@ -354,6 +407,7 @@
     } else if (id.startsWith('trail')) {
       title = p.name || 'Trail';
       html += pill({ double: 'Double track', single: 'Single track', route: 'Route', shared: 'Shared-use path' }[p.cls] || p.type || 'Trail', TRAIL);
+      html += '<div id="gal" class="gal" hidden></div>';
       html += '<table class="kv">' + row('Type', p.type) + row('Length', p.miles ? Number(p.miles).toFixed(1) + ' mi' : '') + '</table><div class="credit">Source: Kodiak Island Borough KIB_Trails (data edited 2025-08-19). No warranty.</div>';
     } else if (id.startsWith('row')) {
       title = (p.route || 'State road') + ' right-of-way'; html += pill((p.basis === 'measured' ? 'Measured' : 'Assumed') + ' width — DERIVED', '#FFC107');
@@ -372,6 +426,52 @@
         + '<p class="note">Category level only. Private owners are not named. Source: Kodiak Island Borough KIB_Ownership (no warranty).</p>';
     }
     openSheet(title, html);
+    const pkey = id.startsWith('poi-') ? p.id : id.startsWith('fish') && p.name ? 'fish:' + p.name : id.startsWith('trail') && p.id ? 'trail:' + p.id : null;
+    if (pkey) photosFor(pkey).then((list) => { const el = $('gal'); if (el && list && list.length) mountGallery(el, list); });
+  }
+
+  // ---------- historic photos (v1.5.4–1.5.6): bundled copies of kadiak.org photos (AF Tracking Station, WWII plotting bunker), captions + credit link ----------
+  const PHOTO_MANIFESTS = ['photos/aftrack.json', 'photos/cmdbunker.json', 'photos/chiniak_chinmap.json', 'photos/chiniak_tour.json', 'photos/chiniak_df.json', 'photos/chiniak_cg.json', 'photos/chiniak_scr296.json', 'photos/chiniak_bald.json', 'photos/chiniak_isador.json', 'photos/chiniak_greville.json', 'photos/chiniak_darn.json', 'photos/chiniak_chinmap_maps.json', 'photos/kad_abercrombie.json', 'photos/kad_museum.json', 'photos/kad_gibson.json', 'photos/kad_deer.json', 'photos/kad_deer_scr582.json', 'photos/kad_deer_bd74.json', 'photos/kad_castle.json', 'photos/kad_castle_scr296.json', 'photos/kad_puffin.json', 'photos/kad_midway.json', 'photos/kad_acs.json', 'photos/kad_whazzit.json', 'photos/kad_woody_range.json', 'photos/kad_woody.json', 'photos/kad_crash.json', 'photos/kad_buskin.json', 'photos/kad_spruce.json', 'photos/kad_pillar.json', 'photos/kad_pillar_mw.json', 'photos/kad_airport.json', 'photos/kad_navy.json', 'photos/kad_uscg.json', 'photos/kad_entrance.json',
+    'photos/fish.json', 'photos/travel.json', 'photos/trails.json', 'photos/comm.json'];   // v1.5.11: fishing, harbor/travel, trail and library photos (per-photo credit, licence, link)
+  let photoMan = null;
+  async function photosFor(fid) {
+    if (!photoMan) {
+      photoMan = {};
+      const mans = await Promise.all(PHOTO_MANIFESTS.map((m) => fetch(D(m)).then((r) => r.json()).catch(() => null)));
+      mans.forEach((m) => {
+        if (!m) return; const src = m.source || {};
+        Object.entries(m.features || {}).forEach(([k, ids]) => {
+          const l = ids.map((i) => m.photos[i]).filter(Boolean).map((ph) => ({ ...ph, src }));
+          photoMan[k] = (photoMan[k] || []).concat(l);
+        });
+      });
+    }
+    const l = photoMan[fid]; return l && l.length ? l : null;
+  }
+  function mountGallery(el, list) {
+    let i = 0;
+    el.innerHTML = `<div class="gal-h">📷 ${esc(list[0].src.heading || 'Historic photos')} (${list.length})</div>
+      <div class="gal-frame"><img alt="" decoding="async"><button class="gal-b gal-prev" aria-label="Previous photo">‹</button><button class="gal-b gal-next" aria-label="Next photo">›</button></div>
+      <div class="gal-n"></div><div class="gal-c"></div><div class="gal-cr"></div>
+      <div class="gal-src">Photo credit: <a class="a" target="_blank" rel="noopener"></a></div><div class="gal-lic" hidden>License: <a class="a" target="_blank" rel="noopener"></a></div>`;
+    const img = el.querySelector('img');
+    const show = (k) => {
+      i = (k + list.length) % list.length; const ph = list[i];
+      img.src = D('photos/' + ph.file); img.alt = ph.caption; img.style.aspectRatio = ph.w + ' / ' + ph.h;
+      el.querySelector('.gal-n').textContent = `${i + 1} / ${list.length}`;
+      const c = el.querySelector('.gal-c'); c.textContent = ph.caption; c.classList.toggle('ed', ph.caption.startsWith('['));
+      el.querySelector('.gal-cr').textContent = ph.credit;
+      const sa = el.querySelector('.gal-src a'); sa.href = ph.url || ph.src.url || 'https://www.kadiak.org/'; sa.textContent = ph.label || ph.src.label || 'kadiak.org';
+      const lic = el.querySelector('.gal-lic'); lic.hidden = !ph.license; const la = lic.querySelector('a'); la.textContent = ph.license || ''; la.href = ph.licenseUrl || '#';
+      if (list.length > 1) { const nx = new Image(); nx.src = D('photos/' + list[(i + 1) % list.length].file); }
+    };
+    el.querySelector('.gal-prev').onclick = () => show(i - 1); el.querySelector('.gal-next').onclick = () => show(i + 1);
+    if (list.length < 2) el.querySelectorAll('.gal-b').forEach((b) => { b.hidden = true; });
+    img.onclick = () => window.open(img.src, '_blank', 'noopener');
+    let x0 = null; const fr = el.querySelector('.gal-frame');
+    fr.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    fr.addEventListener('touchend', (e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1)); }, { passive: true });
+    show(0); el.hidden = false;
   }
 
   // ---------- panels ----------
@@ -447,7 +547,7 @@
         ${row('Trails, parcels, ownership', 'Kodiak Island Borough GIS (KIB_Trails, KIB_Parcels, KIB_Ownership, KIB_Roads). No warranty.')}
         ${row('Fishing', 'ADF&G GoFishAK; NOAA ENC; ADF&G Kodiak fishing reports')}
         ${row('Tides', 'NOAA CO-OPS tide predictions')}
-        ${row('Military history', 'kadiak.org (Kodiak Historical Army/Navy site) — old map sheets and history; field GPS points by Victor')}
+        ${row('Military history', 'kadiak.org (Kodiak Historical Army/Navy site) — old map sheets, history and photos (Joe Stevens); field GPS points by Victor')}
         ${row('Logging roads & bike trails', 'Victor, kodiakking.com')}
         ${row('Places', 'Business, school and library listings as credited on each card')}
         ${row('Map engine', 'MapLibre GL JS (BSD-3-Clause); Open Sans glyphs (Apache 2.0); Oswald & Inter fonts (OFL)')}
