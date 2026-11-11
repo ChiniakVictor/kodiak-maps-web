@@ -31,7 +31,7 @@
     { id: 'row', t: 'State road right-of-way', s: 'Chiniak Hwy & Rezanof Dr (DOT&PF). Approximate band, widths DERIVED (measured from parcel gaps or assumed 100 ft)', on: false },
     { id: 'trails', t: 'Kodiak Trails', s: 'Kodiak Island Borough trail network: 77 trails, 265.5 mi', on: false,
       legend: [[TRAIL, '━ double track'], [TRAIL, '╍ single track'], [TRAIL, '··· route']] },
-    { id: 'bike', t: 'Town bike trails', s: "Victor's Town Bike Trail Map: trails in their map colours, trailheads and work spots", on: false },
+    { id: 'bike', t: 'Town bike trails', s: "Town Bike Trail Map by Local Riders: trails in their map colours, trailheads and work spots", on: false },
     { id: 'log', t: 'Chiniak logging roads', s: 'From the kodiakking.com Google Earth map (Victor)', on: true },
     { id: 'parcels', t: 'Property lines', s: 'Borough parcel boundaries only, from zoom 13. No owner, address or value data is included.', on: false },
     { id: 'own', t: 'Land ownership', s: 'Category and agency only (State, Federal, Native corporation, Borough…). Private owners are not named.', on: false },
@@ -260,7 +260,7 @@
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     map.addControl(new maplibregl.ScaleControl({ unit: 'imperial', maxWidth: 110 }), 'bottom-left');
     map.addControl(new maplibregl.AttributionControl({ compact: true,
-      customAttribution: 'Data: BLM · Kodiak Island Borough · Alaska DOT&amp;PF · ADF&amp;G · NOAA · kadiak.org · Victor (kodiakking.com)' }), 'bottom-right');
+      customAttribution: 'Data: BLM · Kodiak Island Borough · Alaska DOT&amp;PF · ADF&amp;G · NOAA · kadiak.org · Local Riders · Victor (kodiakking.com)' }), 'bottom-right');
     map.on('load', () => {
       map.addImage('fish', emojiImage('🐟'));
       Object.entries(POI_ICON).forEach(([k, e]) => map.addImage('poi-ic-' + k, emojiImage(e)));
@@ -403,7 +403,7 @@
       html += '<table class="kv">' + row('Note', p.desc) + row('Folder', p.folder) + '</table><div class="credit">Source: Victor (kodiakking.com) — Chiniak logging roads Google Earth map. Not an official road; conditions unknown.</div>';
     } else if (id.startsWith('bike')) {
       title = p.name || 'Town bike trail';
-      html += '<table class="kv">' + row('Note', p.desc) + row('Folder', p.folder) + row('Length', p.len_m ? (p.len_m / 1609.34).toFixed(2) + ' mi' : '') + '</table><div class="credit">Source: Victor — Town Bike Trail Map (kodiakking.com)</div>';
+      html += '<table class="kv">' + row('Note', p.desc) + row('Folder', p.folder) + row('Length', p.len_m ? (p.len_m / 1609.34).toFixed(2) + ' mi' : '') + '</table><div class="credit">Source: Local Riders — Town Bike Trail Map</div>';
     } else if (id.startsWith('trail')) {
       title = p.name || 'Trail';
       html += pill({ double: 'Double track', single: 'Single track', route: 'Route', shared: 'Shared-use path' }[p.cls] || p.type || 'Trail', TRAIL);
@@ -548,7 +548,7 @@
         ${row('Fishing', 'ADF&G GoFishAK; NOAA ENC; ADF&G Kodiak fishing reports')}
         ${row('Tides', 'NOAA CO-OPS tide predictions')}
         ${row('Military history', 'kadiak.org (Kodiak Historical Army/Navy site) — old map sheets, history and photos (Joe Stevens); field GPS points by Victor')}
-        ${row('Logging roads & bike trails', 'Victor, kodiakking.com')}
+        ${row('Logging roads', 'Victor, kodiakking.com')} ${row('Bike trails', 'Local Riders')}
         ${row('Places', 'Business, school and library listings as credited on each card')}
         ${row('Map engine', 'MapLibre GL JS (BSD-3-Clause); Open Sans glyphs (Apache 2.0); Oswald & Inter fonts (OFL)')}
       </table>
